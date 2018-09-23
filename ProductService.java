@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -43,9 +44,16 @@ public class ProductService extends javax.swing.JFrame {
         getProducts();
         jtblProducts.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             public void valueChanged(ListSelectionEvent event) {
-                String productID = jtblProducts.getValueAt(jtblProducts.getSelectedRow(), 0).toString();
-                currentProduct = getProduct(productID);
-                setProduct(currentProduct);
+                try
+                {
+                    String productID = jtblProducts.getValueAt(jtblProducts.getSelectedRow(), 0).toString();
+                    currentProduct = getProduct(productID);
+                    setProduct(currentProduct);
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -73,12 +81,12 @@ public class ProductService extends javax.swing.JFrame {
             Class.forName("org.postgresql.Driver");
             String url = "jdbc:postgresql://" + hostName + "/" + dbName + "?user=" + userName + "&password=" + password + "&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
             conn = DriverManager.getConnection(url);
-            System.out.println(url);
             return conn;
         }
         catch(Exception e)
         {
-            System.out.println("Not Connected");
+            e.printStackTrace();
+
             return null;
         }
     }
@@ -369,7 +377,28 @@ public class ProductService extends javax.swing.JFrame {
     }//GEN-LAST:event_jtxtProductID1ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        try
+        {
+            Connection con = getConnection();
+
+            PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM products where productid = ?");
+            ps.setString(1, jtxtProductID1.getText());
+            ps.executeUpdate();
+            ps.close();
+
+            con.close();
+
+            JOptionPane.showMessageDialog(null, "Deleted");
+
+            getProducts();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+
+            getProducts();
+        }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -377,15 +406,14 @@ public class ProductService extends javax.swing.JFrame {
         //INSERT
         boolean isValid = validateForm();
         
-        if(isValid)
+        if(isValid && this.file != null)
         {
             //insert current product into the db table `products`
             currentProduct = new Product();
             currentProduct.setProductID(jtxtProductID1.getText());
             currentProduct.setName(jtxtName.getText());
             currentProduct.setPrice(Double.parseDouble(jtxtPrice.getText()));
-            if(this.file != null)
-                currentProduct.setImage(this.file);
+            currentProduct.setImage(this.file);
             currentProduct.setDescription(jtxtDesc.getText());
             currentProduct.setStockQty(Integer.parseInt(jtxtStockQty.getText()));
     
@@ -393,13 +421,13 @@ public class ProductService extends javax.swing.JFrame {
             {
                 Connection con = getConnection();
                 
-                FileInputStream fis = new FileInputStream(this.file);
+                FileInputStream fis = new FileInputStream(currentProduct.getImage());
                 PreparedStatement ps = con.prepareStatement(
                         "INSERT INTO products (productID, productName, price, image, description, stockQty, inputdate) VALUES (?, ?, ?, ?, ?, ?, current_timestamp)");
                 ps.setString(1, currentProduct.getProductID());
                 ps.setString(2, currentProduct.getName());
                 ps.setDouble(3, currentProduct.getPrice());
-                ps.setBinaryStream(4, fis, (int)this.file.length());
+                ps.setBinaryStream(4, fis, (int) currentProduct.getImage().length());
                 ps.setString(5, currentProduct.getDescription());
                 ps.setInt(6, currentProduct.getStockQty());
                 ps.executeUpdate();
@@ -414,7 +442,9 @@ public class ProductService extends javax.swing.JFrame {
             }
             catch(Exception e)
             {
-                JOptionPane.showMessageDialog(null, e.getMessage());
+                e.printStackTrace();
+
+                getProducts();
             }
         }
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -432,7 +462,7 @@ public class ProductService extends javax.swing.JFrame {
         {
             Connection con = getConnection();
         
-            PreparedStatement ps = con.prepareStatement("select * from products;");
+            PreparedStatement ps = con.prepareStatement("select * from products order by inputdate desc;");
             ResultSet rs = ps.executeQuery();
             while(rs.next())
             {
@@ -449,7 +479,7 @@ public class ProductService extends javax.swing.JFrame {
         }
         catch(Exception e)
         {
-            JOptionPane.showMessageDialog(null, e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -472,6 +502,9 @@ public class ProductService extends javax.swing.JFrame {
                 String d = rs.getString("stockQty");
                 String e = rs.getString("description");
                 byte[] imgBytes = rs.getBytes("image");
+                this.file = File.createTempFile("tempImg", null, null);
+                FileOutputStream fos = new FileOutputStream(this.file);
+                fos.write(imgBytes);
                 BufferedImage img = ImageIO.read(new ByteArrayInputStream(imgBytes));
                 jLabel1.setIcon(resizeImage(img,jLabel1.getWidth(),jLabel1.getHeight()));
                 product.setProductID(a);
@@ -487,7 +520,7 @@ public class ProductService extends javax.swing.JFrame {
         }
         catch(Exception e)
         {
-            JOptionPane.showMessageDialog(null, e.getMessage());
+            e.printStackTrace();
         }
 
         return product;
@@ -571,13 +604,48 @@ public class ProductService extends javax.swing.JFrame {
         //UPDATE
         boolean isValid = validateForm();
         
-        if(isValid)
+        if(isValid && this.file != null)
         {
             //update current product to the db table `products`
-            
-            JOptionPane.showMessageDialog(null, "Updated");
-        }
+            //insert current product into the db table `products`
+            currentProduct = new Product();
+            currentProduct.setProductID(jtxtProductID1.getText());
+            currentProduct.setName(jtxtName.getText());
+            currentProduct.setPrice(Double.parseDouble(jtxtPrice.getText()));
+            currentProduct.setImage(this.file);
+            currentProduct.setDescription(jtxtDesc.getText());
+            currentProduct.setStockQty(Integer.parseInt(jtxtStockQty.getText()));
+    
+            try
+            {
+                Connection con = getConnection();
+                
+                FileInputStream fis = new FileInputStream(currentProduct.getImage());
+                PreparedStatement ps = con.prepareStatement(
+                        "UPDATE products set productID = ?, productName = ?, price = ?, image = ?, description = ?, stockQty = ?, inputdate = current_timestamp where productID = ?");
+                ps.setString(1, currentProduct.getProductID());
+                ps.setString(2, currentProduct.getName());
+                ps.setDouble(3, currentProduct.getPrice());
+                ps.setBinaryStream(4, fis, (int) currentProduct.getImage().length());
+                ps.setString(5, currentProduct.getDescription());
+                ps.setInt(6, currentProduct.getStockQty());
+                ps.setString(7, currentProduct.getProductID());
+                ps.executeUpdate();
+                ps.close();
+                fis.close();
 
+                con.close();
+            
+                JOptionPane.showMessageDialog(null, "Updated");
+                
+                getProducts();
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+                getProducts();
+            }
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
