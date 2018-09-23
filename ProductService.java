@@ -3,7 +3,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -34,6 +34,7 @@ public class ProductService extends javax.swing.JFrame {
 
     private Product currentProduct;
     private File file;
+    private byte[] imgBytes;
 
     /**
      * Creates new form ProductService
@@ -129,6 +130,7 @@ public class ProductService extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         shallYouValidate = new javax.swing.JLabel();
         jButton8 = new javax.swing.JButton();
+        jButton9 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -190,11 +192,11 @@ public class ProductService extends javax.swing.JFrame {
                 jLabel1MouseClicked(evt);
             }
         });
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 260, 240, 210));
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 230, 240, 210));
 
         label5.setFont(new java.awt.Font("Dialog", 1, 36)); // NOI18N
         label5.setText("Image");
-        jPanel1.add(label5, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 260, -1, -1));
+        jPanel1.add(label5, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, -1, -1));
 
         jtxtDesc.setBackground(new java.awt.Color(245, 245, 245));
         jtxtDesc.setColumns(20);
@@ -367,6 +369,14 @@ public class ProductService extends javax.swing.JFrame {
         });
         jPanel1.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 630, 520, 50));
 
+        jButton9.setText("Save to Disk");
+        jButton9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton9ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(jButton9, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 440, -1, -1));
+
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
         pack();
@@ -515,7 +525,7 @@ public class ProductService extends javax.swing.JFrame {
                 String c = rs.getString("productName");
                 String d = rs.getString("stockQty");
                 String e = rs.getString("description");
-                byte[] imgBytes = rs.getBytes("image");
+                this.imgBytes = rs.getBytes("image");
                 this.file = File.createTempFile("tempImg", null, null);
                 FileOutputStream fos = new FileOutputStream(this.file);
                 fos.write(imgBytes);
@@ -719,6 +729,39 @@ public class ProductService extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton8ActionPerformed
 
+    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+        //Save Image
+        if(this.file != null && this.imgBytes != null)
+        {
+            JFrame parentFrame = new JFrame();
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Save to Disk");    
+
+            int userSelection = fileChooser.showSaveDialog(parentFrame);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                try {
+                    Thread myThread = new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                FileOutputStream fos = new FileOutputStream(fileChooser.getSelectedFile());
+                                fos.write(imgBytes);
+                                JOptionPane.showMessageDialog(null, "Saved");
+                                fos.close();
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    myThread.start();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }//GEN-LAST:event_jButton9ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -763,6 +806,7 @@ public class ProductService extends javax.swing.JFrame {
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
     private javax.swing.JButton jButton8;
+    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
