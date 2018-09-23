@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -32,17 +31,29 @@ import javax.swing.table.DefaultTableModel;
  */
 public class ProductService extends javax.swing.JFrame {
 
+    private Paging paging;
+    private int totalPages;
+    private int totalRecords;
     private Product currentProduct;
     private File file;
-    private byte[] imgBytes;
+    private byte[] imgBytes;    
 
     /**
      * Creates new form ProductService
      */
     public ProductService()
     {
+        paging = new Paging();
+        paging.setCurrentPage(1);
+        paging.setRecordsPerPage(10);
+        getInitialProductsInfo();
+        paging.setPages(totalPages);
+        paging.setTotalRecords(totalRecords);
+        
         initComponents();
+
         getProducts();
+
         jtblProducts.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             public void valueChanged(ListSelectionEvent event) {
                 try
@@ -280,7 +291,6 @@ public class ProductService extends javax.swing.JFrame {
         jButton4.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/first.png"))); // NOI18N
         jButton4.setText("First");
-        jButton4.setEnabled(false);
         jButton4.setIconTextGap(10);
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -293,7 +303,6 @@ public class ProductService extends javax.swing.JFrame {
         jButton5.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/previous.png"))); // NOI18N
         jButton5.setText("Prev");
-        jButton5.setEnabled(false);
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton5ActionPerformed(evt);
@@ -305,7 +314,6 @@ public class ProductService extends javax.swing.JFrame {
         jButton6.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/last.png"))); // NOI18N
         jButton6.setText("Last");
-        jButton6.setEnabled(false);
         jButton6.setIconTextGap(10);
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -318,7 +326,6 @@ public class ProductService extends javax.swing.JFrame {
         jButton7.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/next.png"))); // NOI18N
         jButton7.setText("Next");
-        jButton7.setEnabled(false);
         jButton7.setIconTextGap(10);
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -471,6 +478,29 @@ public class ProductService extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void getInitialProductsInfo()
+    {
+        try
+        {
+            Connection con = getConnection();
+        
+            PreparedStatement ps = con.prepareStatement("select count(id) as totalRecords from products;");
+            ResultSet rs = ps.executeQuery();
+            if(rs.next())
+            {
+                this.totalRecords = rs.getInt("totalRecords");
+                this.totalPages = (int) Math.ceil((double) this.totalRecords/(double) paging.getRecordsPerPage());
+            }
+            rs.close();
+            ps.close();
+            
+            con.close();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }        
+    }
+
     private void getProducts()
     {
         DefaultTableModel model = (DefaultTableModel) jtblProducts.getModel();
@@ -484,7 +514,11 @@ public class ProductService extends javax.swing.JFrame {
         {
             Connection con = getConnection();
         
-            PreparedStatement ps = con.prepareStatement("select * from products order by inputdate desc;");
+            PreparedStatement ps = con.prepareStatement(
+                    "select * from products order by inputdate desc"
+                    + " limit " + paging.getRecordsPerPage() 
+                    + " offset " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage())
+                    + ";");
             ResultSet rs = ps.executeQuery();
             while(rs.next())
             {
@@ -673,19 +707,23 @@ public class ProductService extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // TODO add your handling code here:
+        paging.setCurrentPage(1);
+        getProducts();
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        // TODO add your handling code here:
+        paging.moveToPrevPage();
+        getProducts();
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
+        paging.setCurrentPage(paging.getPages());
+        getProducts();
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        // TODO add your handling code here:
+        paging.moveToNextPage();
+        getProducts();
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jtxtStockQtyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtxtStockQtyActionPerformed
