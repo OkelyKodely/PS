@@ -57,5 +57,4 @@ public class Product {
     public void setStockQty(int stockQty) {
         this.stockQty = stockQty;
     }
-    
 }

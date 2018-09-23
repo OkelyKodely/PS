@@ -2,6 +2,8 @@
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
@@ -13,6 +15,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 /*
@@ -33,10 +37,26 @@ public class ProductService extends javax.swing.JFrame {
     /**
      * Creates new form ProductService
      */
-    public ProductService() {
-        
+    public ProductService()
+    {
         initComponents();
         getProducts();
+        jtblProducts.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+            public void valueChanged(ListSelectionEvent event) {
+                String productID = jtblProducts.getValueAt(jtblProducts.getSelectedRow(), 0).toString();
+                currentProduct = getProduct(productID);
+                setProduct(currentProduct);
+            }
+        });
+    }
+    
+    private void setProduct(Product product)
+    {
+        jtxtProductID1.setText(product.getProductID());
+        jtxtName.setText(product.getName());
+        jtxtPrice.setText(product.getPrice()+"");
+        jtxtStockQty.setText(product.getStockQty()+"");
+        jtxtDesc.setText(product.getDescription());
     }
 
     public Connection getConnection()
@@ -431,6 +451,46 @@ public class ProductService extends javax.swing.JFrame {
         {
             JOptionPane.showMessageDialog(null, e.getMessage());
         }
+    }
+
+    private Product getProduct(String productID)
+    {
+        Product product = new Product();
+        
+        try
+        {
+            Connection con = getConnection();
+        
+            PreparedStatement ps = con.prepareStatement("select * from products where productID = ?;");
+            ps.setString(1, productID);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next())
+            {
+                String a = rs.getString("productID");
+                String b = rs.getString("price");
+                String c = rs.getString("productName");
+                String d = rs.getString("stockQty");
+                String e = rs.getString("description");
+                byte[] imgBytes = rs.getBytes("image");
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(imgBytes));
+                jLabel1.setIcon(resizeImage(img,jLabel1.getWidth(),jLabel1.getHeight()));
+                product.setProductID(a);
+                product.setPrice(Double.parseDouble(b));
+                product.setName(c);
+                product.setStockQty(Integer.parseInt(d));
+                product.setDescription(e);
+            }
+            rs.close();
+            ps.close();
+            
+            con.close();
+        }
+        catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        }
+
+        return product;
     }
     
     private boolean validateForm()
