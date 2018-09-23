@@ -3,13 +3,17 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -23,39 +27,39 @@ import javax.swing.JOptionPane;
  */
 public class ProductService extends javax.swing.JFrame {
 
-    private BufferedImage productImage = null;
-    
+    private Product currentProduct;
+    private File file;
+
     /**
      * Creates new form ProductService
      */
     public ProductService() {
         
         initComponents();
-
-        getConnection();
+        getProducts();
     }
 
     public Connection getConnection()
     {
+        Connection conn = null;
+
         String hostName = "ec2-54-163-240-54.compute-1.amazonaws.com";
         String dbName = "d89l9begjikklj";
         String userName = "isscllglmxgeln";
         String password = "334f696049572d4bc9c3b6b78c3410301e24dd3b5fd2b96dc15bf4c1c6fed113";
-
-        Connection conn = null;
 
         try
         {
             Class.forName("org.postgresql.Driver");
             String url = "jdbc:postgresql://" + hostName + "/" + dbName + "?user=" + userName + "&password=" + password + "&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory";
             conn = DriverManager.getConnection(url);
-            this.setTitle("Connected");
+            System.out.println(url);
             return conn;
         }
         catch(Exception e)
         {
             System.out.println("Not Connected");
-            return conn;
+            return null;
         }
     }
     
@@ -174,7 +178,7 @@ public class ProductService extends javax.swing.JFrame {
 
         jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 490, 510, -1));
 
-        jtblProducts.setBackground(new java.awt.Color(255, 255, 204));
+        jtblProducts.setBackground(new java.awt.Color(204, 204, 204));
         jtblProducts.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         jtblProducts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -185,7 +189,7 @@ public class ProductService extends javax.swing.JFrame {
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Integer.class, java.lang.Double.class, java.lang.String.class, java.lang.Integer.class
+                java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false
@@ -351,18 +355,84 @@ public class ProductService extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
 
         //INSERT
-
         boolean isValid = validateForm();
         
         if(isValid)
         {
-            //insert into db...
-            
-            JOptionPane.showConfirmDialog(null, "Inserted");
-        }
+            //insert current product into the db table `products`
+            currentProduct = new Product();
+            currentProduct.setProductID(jtxtProductID1.getText());
+            currentProduct.setName(jtxtName.getText());
+            currentProduct.setPrice(Double.parseDouble(jtxtPrice.getText()));
+            if(this.file != null)
+                currentProduct.setImage(this.file);
+            currentProduct.setDescription(jtxtDesc.getText());
+            currentProduct.setStockQty(Integer.parseInt(jtxtStockQty.getText()));
+    
+            try
+            {
+                Connection con = getConnection();
+                
+                FileInputStream fis = new FileInputStream(this.file);
+                PreparedStatement ps = con.prepareStatement(
+                        "INSERT INTO products (productID, productName, price, image, description, stockQty, inputdate) VALUES (?, ?, ?, ?, ?, ?, current_timestamp)");
+                ps.setString(1, currentProduct.getProductID());
+                ps.setString(2, currentProduct.getName());
+                ps.setDouble(3, currentProduct.getPrice());
+                ps.setBinaryStream(4, fis, (int)this.file.length());
+                ps.setString(5, currentProduct.getDescription());
+                ps.setInt(6, currentProduct.getStockQty());
+                ps.executeUpdate();
+                ps.close();
+                fis.close();
 
+                con.close();
+                
+                JOptionPane.showMessageDialog(null, "Inserted");
+                
+                getProducts();
+            }
+            catch(Exception e)
+            {
+                JOptionPane.showMessageDialog(null, e.getMessage());
+            }
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    private void getProducts()
+    {
+        DefaultTableModel model = (DefaultTableModel) jtblProducts.getModel();
+
+        int rowCount = model.getRowCount();
+        for (int i = rowCount - 1; i >= 0; i--) {
+            model.removeRow(i);
+        }
+
+        try
+        {
+            Connection con = getConnection();
+        
+            PreparedStatement ps = con.prepareStatement("select * from products;");
+            ResultSet rs = ps.executeQuery();
+            while(rs.next())
+            {
+                String a = rs.getString("productID");
+                String b = rs.getString("price");
+                String c = rs.getString("productName");
+                String d = rs.getString("stockQty");
+                model.addRow(new Object[]{a,b,c,d});
+            }
+            rs.close();
+            ps.close();
+            
+            con.close();
+        }
+        catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(null, e.getMessage());
+        }
+    }
+    
     private boolean validateForm()
     {
         boolean validationRequired = false;
@@ -439,14 +509,13 @@ public class ProductService extends javax.swing.JFrame {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
 
         //UPDATE
-
         boolean isValid = validateForm();
         
         if(isValid)
         {
-            //update the db...
+            //update current product to the db table `products`
             
-            JOptionPane.showConfirmDialog(null, "Updated");
+            JOptionPane.showMessageDialog(null, "Updated");
         }
 
     }//GEN-LAST:event_jButton3ActionPerformed
@@ -487,11 +556,10 @@ public class ProductService extends javax.swing.JFrame {
         int result = fc.showOpenDialog(null);
         if(result == JFileChooser.APPROVE_OPTION)
         {
-            File file = fc.getSelectedFile();
+            this.file = fc.getSelectedFile();
             try
             {
                 BufferedImage b = ImageIO.read(file);
-                productImage = b;
                 ImageIcon ii = resizeImage(b, jLabel1.getWidth(), jLabel1.getHeight());
                 jLabel1.setIcon(ii);
             }
