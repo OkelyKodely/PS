@@ -45,7 +45,7 @@ public class ProductService extends javax.swing.JFrame {
     {
         paging = new Paging();
         paging.setCurrentPage(1);
-        paging.setRecordsPerPage(10);
+        paging.setRecordsPerPage(15);
         getInitialProductsInfo();
         paging.setPages(totalPages);
         paging.setTotalRecords(totalRecords);
@@ -220,7 +220,6 @@ public class ProductService extends javax.swing.JFrame {
 
         jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 490, 510, -1));
 
-        jtblProducts.setBackground(new java.awt.Color(204, 204, 204));
         jtblProducts.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         jtblProducts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -245,7 +244,7 @@ public class ProductService extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jtblProducts.setGridColor(new java.awt.Color(204, 204, 204));
+        jtblProducts.setGridColor(new java.awt.Color(0, 0, 0));
         jtblProducts.setOpaque(false);
         jScrollPane2.setViewportView(jtblProducts);
 
@@ -533,7 +532,14 @@ public class ProductService extends javax.swing.JFrame {
             
             con.close();
             
-            this.setTitle(model.getRowCount() + " items found");
+            this.getInitialProductsInfo();
+            
+            this.setTitle(
+                    paging.getTotalRecords() + " items found | page: " +
+                    paging.getCurrentPage() + " | " +
+                    "showing items: " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage()+1) +
+                    " Of " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage()+(paging.getTotalRecords()-((paging.getCurrentPage()-1)*paging.getRecordsPerPage()))) +
+                    "");
         }
         catch(Exception e)
         {
