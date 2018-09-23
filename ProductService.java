@@ -126,6 +126,7 @@ public class ProductService extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
         shallYouValidate = new javax.swing.JLabel();
         jButton8 = new javax.swing.JButton();
 
@@ -277,6 +278,7 @@ public class ProductService extends javax.swing.JFrame {
         jButton4.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/first.png"))); // NOI18N
         jButton4.setText("First");
+        jButton4.setEnabled(false);
         jButton4.setIconTextGap(10);
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -289,6 +291,7 @@ public class ProductService extends javax.swing.JFrame {
         jButton5.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/previous.png"))); // NOI18N
         jButton5.setText("Prev");
+        jButton5.setEnabled(false);
         jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton5ActionPerformed(evt);
@@ -300,6 +303,7 @@ public class ProductService extends javax.swing.JFrame {
         jButton6.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/last.png"))); // NOI18N
         jButton6.setText("Last");
+        jButton6.setEnabled(false);
         jButton6.setIconTextGap(10);
         jButton6.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -312,6 +316,7 @@ public class ProductService extends javax.swing.JFrame {
         jButton7.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/next.png"))); // NOI18N
         jButton7.setText("Next");
+        jButton7.setEnabled(false);
         jButton7.setIconTextGap(10);
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -337,12 +342,16 @@ public class ProductService extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 10));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
-        jLabel2.setText("Product Service");
-        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 150, -1, -1));
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel2.setText("Database Application");
+        jPanel2.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 240, -1, -1));
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/logo.png"))); // NOI18N
         jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 80, -1, -1));
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 36)); // NOI18N
+        jLabel4.setText("Product Service");
+        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 150, -1, -1));
 
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 100, 350, 370));
 
@@ -377,27 +386,30 @@ public class ProductService extends javax.swing.JFrame {
     }//GEN-LAST:event_jtxtProductID1ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        try
+        if(JOptionPane.showConfirmDialog(this, "Delete selected product item?", "Delete", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
         {
-            Connection con = getConnection();
+            try
+            {
+                Connection con = getConnection();
 
-            PreparedStatement ps = con.prepareStatement(
-                    "DELETE FROM products where productid = ?");
-            ps.setString(1, jtxtProductID1.getText());
-            ps.executeUpdate();
-            ps.close();
+                PreparedStatement ps = con.prepareStatement(
+                        "DELETE FROM products where productid = ?");
+                ps.setString(1, jtxtProductID1.getText());
+                ps.executeUpdate();
+                ps.close();
 
-            con.close();
+                con.close();
 
-            JOptionPane.showMessageDialog(null, "Deleted");
+                JOptionPane.showMessageDialog(null, "Deleted");
 
-            getProducts();
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
+                getProducts();
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
 
-            getProducts();
+                getProducts();
+            }
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
@@ -476,6 +488,8 @@ public class ProductService extends javax.swing.JFrame {
             ps.close();
             
             con.close();
+            
+            this.setTitle(model.getRowCount() + " items found");
         }
         catch(Exception e)
         {
@@ -622,7 +636,7 @@ public class ProductService extends javax.swing.JFrame {
                 
                 FileInputStream fis = new FileInputStream(currentProduct.getImage());
                 PreparedStatement ps = con.prepareStatement(
-                        "UPDATE products set productID = ?, productName = ?, price = ?, image = ?, description = ?, stockQty = ?, inputdate = current_timestamp where productID = ?");
+                        "UPDATE products set productid = ?, productName = ?, price = ?, image = ?, description = ?, stockQty = ?, inputdate = current_timestamp where productID = ?");
                 ps.setString(1, currentProduct.getProductID());
                 ps.setString(2, currentProduct.getName());
                 ps.setDouble(3, currentProduct.getPrice());
@@ -752,6 +766,7 @@ public class ProductService extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
