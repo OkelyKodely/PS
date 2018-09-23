@@ -173,6 +173,11 @@ public class ProductService extends javax.swing.JFrame {
                 jtxtProductID1ActionPerformed(evt);
             }
         });
+        jtxtProductID1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jtxtProductID1KeyPressed(evt);
+            }
+        });
         jPanel1.add(jtxtProductID1, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 20, 180, 60));
 
         jtxtName.setBackground(new java.awt.Color(245, 245, 245));
@@ -182,6 +187,11 @@ public class ProductService extends javax.swing.JFrame {
                 jtxtNameActionPerformed(evt);
             }
         });
+        jtxtName.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jtxtNameKeyPressed(evt);
+            }
+        });
         jPanel1.add(jtxtName, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 90, 240, 60));
 
         jtxtPrice.setBackground(new java.awt.Color(245, 245, 245));
@@ -189,6 +199,11 @@ public class ProductService extends javax.swing.JFrame {
         jtxtPrice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jtxtPriceActionPerformed(evt);
+            }
+        });
+        jtxtPrice.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jtxtPriceKeyPressed(evt);
             }
         });
         jPanel1.add(jtxtPrice, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 160, 240, 60));
@@ -216,6 +231,11 @@ public class ProductService extends javax.swing.JFrame {
         jtxtDesc.setRows(5);
         jtxtDesc.setAutoscrolls(false);
         jtxtDesc.setMinimumSize(new java.awt.Dimension(1000, 22));
+        jtxtDesc.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jtxtDescKeyPressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(jtxtDesc);
 
         jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 490, 510, -1));
@@ -344,6 +364,11 @@ public class ProductService extends javax.swing.JFrame {
                 jtxtStockQtyActionPerformed(evt);
             }
         });
+        jtxtStockQty.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jtxtStockQtyKeyPressed(evt);
+            }
+        });
         jPanel1.add(jtxtStockQty, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 20, 110, 60));
 
         jPanel2.setBackground(new java.awt.Color(245, 245, 245));
@@ -431,6 +456,19 @@ public class ProductService extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
 
+        if(jButton2.getText().equals("New")) {
+            jButton2.setText("Insert");
+
+            jtxtProductID1.setText("");
+            jtxtName.setText("");
+            jtxtPrice.setText("");
+            jLabel1.setIcon(null);
+            jtxtDesc.setText("");
+            jtxtStockQty.setText("");
+            
+            return;
+        }
+        
         //INSERT
         boolean isValid = validateForm();
         
@@ -467,6 +505,13 @@ public class ProductService extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Inserted");
                 
                 getProducts();
+                
+                jtxtProductID1.setText("");
+                jtxtName.setText("");
+                jtxtPrice.setText("");
+                jLabel1.setIcon(null);
+                jtxtDesc.setText("");
+                jtxtStockQty.setText("");
             }
             catch(Exception e)
             {
@@ -581,6 +626,8 @@ public class ProductService extends javax.swing.JFrame {
             ps.close();
             
             con.close();
+ 
+            jButton2.setText("New");
         }
         catch(Exception e)
         {
@@ -805,6 +852,26 @@ public class ProductService extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_jButton9ActionPerformed
+
+    private void jtxtProductID1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtxtProductID1KeyPressed
+        jButton2.setText("Insert");
+    }//GEN-LAST:event_jtxtProductID1KeyPressed
+
+    private void jtxtNameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtxtNameKeyPressed
+        jButton2.setText("Insert");
+    }//GEN-LAST:event_jtxtNameKeyPressed
+
+    private void jtxtPriceKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtxtPriceKeyPressed
+        jButton2.setText("Insert");
+    }//GEN-LAST:event_jtxtPriceKeyPressed
+
+    private void jtxtDescKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtxtDescKeyPressed
+        jButton2.setText("Insert");
+    }//GEN-LAST:event_jtxtDescKeyPressed
+
+    private void jtxtStockQtyKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtxtStockQtyKeyPressed
+        jButton2.setText("Insert");
+    }//GEN-LAST:event_jtxtStockQtyKeyPressed
 
     /**
      * @param args the command line arguments
