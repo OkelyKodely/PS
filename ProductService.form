@@ -256,6 +256,7 @@
                   <Color blue="0" green="0" red="0" type="rgb"/>
                 </Property>
                 <Property name="opaque" type="boolean" value="false"/>
+                <Property name="rowHeight" type="int" value="28"/>
               </Properties>
             </Component>
           </SubComponents>

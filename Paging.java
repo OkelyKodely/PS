@@ -6,6 +6,25 @@ public class Paging {
     private int totalRecords;
     private int currentPage;
     
+    public String getInfo()
+    {
+        String info = "";
+        if(getCurrentPage() == (int) Math.ceil((double) getTotalRecords()/(double) getRecordsPerPage())) {
+            info = getTotalRecords() + " items found | page: " +
+                   getCurrentPage() + " of " + ((int) Math.ceil((double) getTotalRecords()/(double) getRecordsPerPage())) + " pages | " +
+                   "showing items: " + ((getCurrentPage()-1)*getRecordsPerPage()+1) +
+                   " thru " + (getTotalRecords()) +
+                   "";
+        } else {
+            info = getTotalRecords() + " items found | page: " +
+                   getCurrentPage() + " of " + ((int) Math.ceil((double) getTotalRecords()/(double) getRecordsPerPage())) + " pages | " +
+                   "showing items: " + ((getCurrentPage()-1)*getRecordsPerPage()+1) +
+                   " thru " + ((getCurrentPage())*getRecordsPerPage()) +
+                   "";
+        }
+        return info;
+    }
+    
     public int moveToPrevPage()
     {
         if(currentPage-1 >= 1) {

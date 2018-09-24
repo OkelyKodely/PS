@@ -68,6 +68,8 @@ public class ProductService extends javax.swing.JFrame {
                 }
             }
         });
+        
+        jScrollPane2.getViewport().setBackground(Color.WHITE);
     }
     
     private void setProduct(Product product)
@@ -266,6 +268,7 @@ public class ProductService extends javax.swing.JFrame {
         });
         jtblProducts.setGridColor(new java.awt.Color(0, 0, 0));
         jtblProducts.setOpaque(false);
+        jtblProducts.setRowHeight(28);
         jScrollPane2.setViewportView(jtblProducts);
 
         jPanel1.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(830, 20, 360, 450));
@@ -532,8 +535,10 @@ public class ProductService extends javax.swing.JFrame {
             ResultSet rs = ps.executeQuery();
             if(rs.next())
             {
-                this.totalRecords = rs.getInt("totalRecords");
-                this.totalPages = (int) Math.ceil((double) this.totalRecords/(double) paging.getRecordsPerPage());
+                totalRecords = rs.getInt("totalRecords");
+                totalPages = (int) Math.ceil((double) this.totalRecords/(double) paging.getRecordsPerPage());
+                paging.setPages(totalPages);
+                paging.setTotalRecords(totalRecords);
             }
             rs.close();
             ps.close();
@@ -554,6 +559,8 @@ public class ProductService extends javax.swing.JFrame {
             model.removeRow(i);
         }
 
+        this.getInitialProductsInfo();
+        
         try
         {
             Connection con = getConnection();
@@ -577,19 +584,19 @@ public class ProductService extends javax.swing.JFrame {
             
             con.close();
             
-            this.getInitialProductsInfo();
-            
-            this.setTitle(
-                    paging.getTotalRecords() + " items found | page: " +
-                    paging.getCurrentPage() + " of " + ((int) Math.ceil((double) paging.getTotalRecords()/(double) paging.getRecordsPerPage())) + " pages | " +
-                    "showing items: " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage()+1) +
-                    " of " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage()+(paging.getTotalRecords()-((paging.getCurrentPage()-1)*paging.getRecordsPerPage()))) +
-                    "");
+            setPagingInfo();
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
+    }
+    
+    private void setPagingInfo()
+    {
+        String titlestr = "";
+        titlestr = paging.getInfo();
+        setTitle(titlestr);
     }
 
     private Product getProduct(String productID)
