@@ -581,9 +581,9 @@ public class ProductService extends javax.swing.JFrame {
             
             this.setTitle(
                     paging.getTotalRecords() + " items found | page: " +
-                    paging.getCurrentPage() + " | " +
+                    paging.getCurrentPage() + " of " + ((int) Math.ceil((double) paging.getTotalRecords()/(double) paging.getRecordsPerPage())) + " pages | " +
                     "showing items: " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage()+1) +
-                    " Of " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage()+(paging.getTotalRecords()-((paging.getCurrentPage()-1)*paging.getRecordsPerPage()))) +
+                    " of " + ((paging.getCurrentPage()-1)*paging.getRecordsPerPage()+(paging.getTotalRecords()-((paging.getCurrentPage()-1)*paging.getRecordsPerPage()))) +
                     "");
         }
         catch(Exception e)
